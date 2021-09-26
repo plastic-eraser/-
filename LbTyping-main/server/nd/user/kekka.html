@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>教員用結果確認ページ</title>
+<script src="https://www.w3schools.com/lib/w3.js"></script>
+</head>
+<style>
+.sorttbl{
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    display: table;
+}
+.sorttbl tr {
+    display: table-row;
+    vertical-align: inherit;
+    border-color: inherit;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.sorttbl th:first-child,
+.sorttbl td:first-child{
+    padding-left: 16px;
+}
+.sorttbl td,
+.sorttbl th{
+    padding: 8px 8px;
+    display: table-cell;
+    text-align: left;
+    vertical-align: top;
+}
+.sorttbl th{
+    color: #fff!important;
+    background-color: #616161!important;
+}
+
+/*--- list css ---*/
+
+.sort-btn{
+    border: none;
+    display: inline-block;
+    padding: 8px 16px;
+    vertical-align: middle;
+    overflow: hidden;
+    text-decoration: none;
+    color: #FFFFFF;
+    background-color: #4CAF50;
+    text-align: center;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+ul.sortlist{
+    list-style-type: none;
+}
+ul.sortlist li{
+    padding: 7px;
+    border-bottom: dotted 1px #454545;
+}
+table {
+	border-collapse: collapse;
+}
+.price caption {
+	color: #orange;
+}
+table th, td {
+	border: 1px solid #e3ecf5;
+	padding: 8px;
+}
+table th {
+	border: 1px solid #e3ecf5;
+	color: #fff;
+	background: #1f8ef5;
+}
+table tr:nth-child(odd) {
+	background: #e3ecf5;
+}
+</style>
+<body>
+<h1>教員用ページ</h1>
+
+<div id="sid" name="sid" ></div>
+<input type="button" value="all question" onclick="showQuestion()"><br>
+<input type="button" value="all response" onclick="showres()"><br>
+student_id = <input type="text" name="sid" id="sid" size="10">
+<input type="button" value="set student_id" onclick="setsid()">
+<input type="button" value="history" onclick="showHistoryByStudent()">
+<input type="button" value="response by student_id" onclick="showResponseByStudent()()"><br>
+question_id = <input type="text" name="qid" id="qid" size="10">
+<input type="button" value="get" onclick="getQ()">
+<input type="button" value="start" onclick="startR()">
+<input type="button" value="export in Excel format" onclick="exportInExcelFormat()"><br>
+response_id = <input type="text" name="rid" id="rid" size="10">,
+miss = <input type="text" name="miss" id="miss" size="10">,
+note = <input type="text" name="note" id="note" size="20">
+<input type="button" value="end" onclick="endR()"><br>
+<input type="button" value="clear" onclick="clearResult()"><br>
+<hr>
+<div id="result"></div>
+<hr>
+<h2>使い方など</h2>
+<ul>
+  <li>「all question」または「all response」のボタンを押すと、データベースにアクセスし、テーブルの内容を、JSON形式で表示します。
+  <li>「student_id =」の右に値を入力してから「set student_id」ボタンを押すと、その値がクッキーに格納されます。ブラウザを閉じて同じURLにアクセスすると、値が復活するはずです。
+  <li>student_idの値をセットしてから、「history」ボタンを押すと、そのstudent_idの解答状況（question_idごとの、実施回数、最小ミスタイプ数、最短時間）を表示します。finish_atが未設定のレコードは含まれません。
+  <li>student_idの値をセットしてから、「response by student_id」ボタンを押すと、そのstudent_idの解答ごとの状況を表示します。finish_atが未設定のレコードも含まれます。
+  <li>「question_id =」の右に値を入力して、「get」ボタンを押すと、questionテーブルに対して問い合わせを行います。該当レコードが見つかれば、そのレコードの値を、JSON形式で表示します。
+  <li>student_idの値をセットしてから、「question_id =」の右に値を入力して、「start」ボタンを押すと、responseテーブルに対して挿入（解答開始）を行います。
+  <li>「response_id =」と「miss =」の右にそれぞれ値を入力し、「end」ボタンを押すと、responseテーブルの更新（解答終了）を行います。
+  <li>「clear」ボタンを押すと、結果表示を消去します。
+</ul>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+// グローバル変数（いくつかの関数内で参照・更新する）
+let res_data = null; // query呼び出しで格納
+let hist = null; // setupHist呼び出しで格納
+const origin_id = 'origin'
+const sid_id = 'sid';
+const qid_id = 'qid';
+const rid_id = 'rid';
+const miss_id = 'miss';
+const note_id = 'note';
+let null_string = '&nbsp;'
+const flag_show_result = true;
+// オリジンの変更
+//document.getElementById('sid').innerHTML = sid_id
+
+// pathに基づきサーバに問い合わせる
+const query = async (path) => {
+  const origin = 'http://localhost:21337'
+  let res = await axios.get(origin + path);
+  res_data = res.data;
+  if (flag_show_result) {
+    //document.getElementById('result').innerHTML = JSON.stringify(res.data);
+  }
+}
+
+// res_dataの値に基づき表を作成する
+// red_dataは，responseテーブルまたはその配列のJavaScriptオブジェクト
+const showResponseTable = () => {
+  const a = (res_data instanceof Array) ? res_data : [res_data];
+  let table = '<div style="height:400px; width:1900px; overflow-y:scroll;"><br><table border="1"><tr><th scope="col">日付</th><th scope="col">問題</th><th scope="col">開始時刻</th><th scope="col">終了時刻</th><th scope="col">誤タイプ数</th><th scope="col">解答時間</th></tr>';
+  //<th scope="col">response_id</th>
+  a.forEach((s) => {
+    let line = '<tr class="item">';
+    //line += '<td>' + s.response_id + '</td>';
+    line += '<td>' + hiString(s.finish_at) + '</td>';
+	if(s.question_id==500)
+	{
+	line += '<td>No.1 Hello</td>';
+	}
+	if(s.question_id==501)
+	{
+	line += '<td>No.2 Pangram</td>';
+	}
+	if(s.question_id==502)
+	{
+	line += '<td>No.3 Even-Odd</td>';
+	}
+	if(s.question_id==503)
+	{
+	line += '<td>No.4 Ten Times</td>';
+	}
+	if(s.question_id==504)
+	{
+	line += '<td>No.5 Maximum</td>';
+	}
+	if(s.question_id==505)
+	{
+	line += '<td>No.6 Triangle Area</td>';
+	}
+	if(s.question_id==506)
+	{
+	line += '<td>No.7 Exponent</td>';
+	}
+
+    line += '<td>' + keikaString(s.start_at) + '</td>';
+    line += '<td>' + keikaString(s.finish_at) + '</td>';
+    line += '<td>' + s.miss_count + '</td>';
+    line += '<td>' + worktimeString(s.start_at, s.finish_at) + '</td>';
+
+    line += '</tr>';
+    table += line;
+  });
+  table += '<table></div>'
+  document.getElementById('result').innerHTML += table;
+}
+
+// "2019-09-03T13:10:00.000Z"のような文字列(UTC)を
+// "2019年9月3日(火) 22時10分0秒"のような文字列(JST)に変換する
+const dateString = (d) => {
+  if (d == null || d == '') return null_string;
+  const daytable = "日月火水木金土".split('').map((c) => `(${c})`);
+  const date = new Date(d);
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日${daytable[date.getDay()]} ${date.getHours()}時${date.getMinutes()}分${date.getSeconds()}秒`
+}
+
+//時間のみに変更
+const keikaString = (d) => {
+  if (d == null || d == '') return null_string;
+  const daytable = "日月火水木金土".split('').map((c) => `(${c})`);
+  const date = new Date(d);
+  return ` ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+}
+
+//日付表示に変更
+const hiString = (d) => {
+  if (d == null || d == '') return null_string;
+  const daytable = "日月火水木金土".split('').map((c) => `(${c})`);
+  const date = new Date(d);
+  return `${date.getMonth() + 1}月${date.getDate()}日 `
+}
+const timeString = (d) => {
+  if (d == null || d == '') return null_string;
+  const daytable = "日月火水木金土".split('').map((c) => `(${c})`);
+  const date = new Date(d);
+  return ` ${date.getHours()}時${date.getMinutes()}分${date.getSeconds()}秒`
+}
+
+
+// 開始時刻d1と終了時刻d2の経過時間を"4分0秒"のような文字列にする
+const worktimeString = (d1, d2) => {
+  if (d1 == null || d1 == '' || d2 == null || d2 == '') return null_string;
+  const t1 = Date.parse(d1);
+  const t2 = Date.parse(d2);
+  const t12 = t2 - t1;
+  let sec = Math.floor(t12 / 1000);
+  const msec = t12 - sec * 1000;
+  const min = Math.floor(sec / 60);
+  sec -= min * 60
+  return min + '分' + sec + '秒';
+}
+
+// stringをHTMLエスケープして返す
+// https://qiita.com/saekis/items/c2b41cd8940923863791
+const escape_html = (string) => {
+  if (typeof string !== 'string') {
+    return string;
+  }
+  return string.replace(/[&'`"<>]/g, function(match) {
+    return {
+      '&': '&amp;',
+      "'": '&#x27;',
+      '`': '&#x60;',
+      '"': '&quot;',
+      '<': '&lt;',
+      '>': '&gt;',
+    }[match]
+  });
+}
+
+// question_idに基づき問題を獲得する
+const getQ = () => {
+  const id = document.getElementById(qid_id).value;
+  if (id == null || id == '') return;
+  query('/getq?id=' + id);
+}
+
+// question_id, student_idに基づき解答を開始する
+const startR = async () => {
+  const qid = document.getElementById(qid_id).value;
+  const sid = document.getElementById(sid_id).value;
+  if (qid == null || qid == '' || sid == null || sid == '') return;
+  await query(`/startr?qid=${qid}&sid=${sid}`);
+  const sleep = (time) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => { resolve(); }, time);
+    });
+  };
+  await sleep(100);
+  if (flag_show_result) {
+    document.getElementById(rid_id).value = res_data.rid;
+    document.getElementById(miss_id).value = "10";
+  }
+}
+
+// response_id, missに基づき解答を終了する
+const endR = async () => {
+  const id = document.getElementById(rid_id).value;
+  const miss = document.getElementById(miss_id).value;
+  const note = encodeURIComponent(document.getElementById(note_id).value || '');
+  if (id == null || id == '' || miss == null || miss == '') return;
+  await query(`/endr?id=${id}&miss=${miss}&note=${note}`);
+  showResponseTable();
+}
+
+// res_dataに基づきすべての問題（の一部の属性）を表形式で表示する
+const showQuestionForChoice = () => {
+  const a = (res_data instanceof Array) ? res_data : [res_data];
+  if (a.forEach) {
+    let table = '<br><table border="1"><tr><th>問題</th><th>名前</th><th>difficulty</th></tr>';
+    res_data.forEach((s) => {
+      let line = '<tr>';
+	  if(s.question_id==500)
+	{
+	line += '<td>No.1 Hello</td>';
+	}
+	if(s.question_id==501)
+	{
+	line += '<td>No.2 Pangram</td>';
+	}
+	if(s.question_id==502)
+	{
+	line += '<td>No.3 Even-Odd</td>';
+	}
+	if(s.question_id==503)
+	{
+	line += '<td>No.4 Ten Times</td>';
+	}
+	if(s.question_id==504)
+	{
+	line += '<td>No.5 Maximum</td>';
+	}
+	if(s.question_id==505)
+	{
+	line += '<td>No.6 Triangle Area</td>';
+	}
+	if(s.question_id==506)
+	{
+	line += '<td>No.7 Exponent</td>';
+	}
+      
+      line += '<td>' + s.name + '</td>';
+      line += '<td>' + s.difficulty + '</td>';
+      line += '</tr>';
+      table += line;
+    });
+    table += '<table>'
+    document.getElementById('result').innerHTML += table;
+  }
+}
+
+// すべての問題を表示する
+const showQuestion = async () => {
+  await query('/show?tab=question');
+  showQuestionForChoice();
+}
+
+// すべての解答を表示する
+const showResponse = () => query('/show?tab=response');
+
+
+
+const showResponseByAllStudent = async () => {
+  await query('/getr' );
+  showResponseTable();
+}
+
+// student_idに基づき解答を表示する
+const showResponseByStudent = async () => {
+  const sid = document.getElementById(sid_id).value;
+  if (sid == null || sid == '') return;
+  await query('/resp?sid=' + sid);
+  showResponseTable();
+}
+//全生徒の結果をテーブルに表示させるdb接続
+const showres = async () => {
+  await query('/show?tab=response');
+  showResponseForChoice ();
+}
+//全生徒の結果をテーブルに表示させる
+const showResponseForChoice = () => {
+     const a = (res_data instanceof Array) ? res_data : [res_data];
+  let table = '<div style="height:300px; width:2000px; overflow-y:scroll;"><br><table border="1"><tr><th scope="col">日付</th><th scope="col">学生番号</th><th scope="col">問題</th><th scope="col">開始時刻</th><th scope="col">終了時刻</th><th scope="col">誤タイプ数</th><th scope="col">解答時間</th><th scope="col">提出ID</th></tr>';
+  //<th scope="col">teisyutu_id</th>
+  a.forEach((s) => {
+    let line = '<tr class="item">';
+   
+    line += '<td>' + hiString(s.finish_at) + '</td>';
+	 line += '<td>' + s.student_id + '</td>';
+	if(s.question_id==500)
+	{
+	line += '<td>No.1 Hello</td>';
+	}
+	if(s.question_id==501)
+	{
+	line += '<td>No.2 Pangram</td>';
+	}
+	if(s.question_id==502)
+	{
+	line += '<td>No.3 Even-Odd</td>';
+	}
+	if(s.question_id==503)
+	{
+	line += '<td>No.4 Ten Times</td>';
+	}
+	if(s.question_id==504)
+	{
+	line += '<td>No.5 Maximum</td>';
+	}
+	if(s.question_id==505)
+	{
+	line += '<td>No.6 Triangle Area</td>';
+	}
+	if(s.question_id==506)
+	{
+	line += '<td>No.7 Exponent</td>';
+	}
+
+    line += '<td>' + keikaString(s.start_at) + '</td>';
+    line += '<td>' + keikaString(s.finish_at) + '</td>';
+    line += '<td>' + s.miss_count + '</td>';
+    line += '<td>' + worktimeString(s.start_at, s.finish_at) + '</td>';
+	line += '<td>' + s.teisyutu_id + '</td>';
+    line += '</tr>';
+    table += line;
+  });
+  table += '<table></div>'
+  document.getElementById('result').innerHTML += table;
+}
+
+
+// res_dataに基づき解答状況を表形式で表示する
+const showHistoryTable = () => {
+  if (!(res_data instanceof Array) || res_data.length == 0) {
+    document.getElementById('result').innerHTML += "(no history)";
+    return;
+  }
+
+  let table = '<br><table border="1"><tr><th>問題</th><th>解答回数</th><th>誤りタイプ数</th><th>解答時間</th></tr>';
+  res_data.forEach((s) => {
+    let line = '<tr>';
+   	if(s.question_id==500)
+	{
+	line += '<td>No.1 Hello</td>';
+	}
+	if(s.question_id==501)
+	{
+	line += '<td>No.2 Pangram</td>';
+	}
+	if(s.question_id==502)
+	{
+	line += '<td>No.3 Even-Odd</td>';
+	}
+	if(s.question_id==503)
+	{
+	line += '<td>No.4 Ten Times</td>';
+	}
+	if(s.question_id==504)
+	{
+	line += '<td>No.5 Maximum</td>';
+	}
+	if(s.question_id==505)
+	{
+	line += '<td>No.6 Triangle Area</td>';
+	}
+	if(s.question_id==506)
+	{
+	line += '<td>No.7 Exponent</td>';
+	}
+    line += '<td>' + s.count + '</td>';
+    line += '<td>' + s.miss + '</td>';
+    line += '<td>' + s.time + '</td>';
+    line += '</tr>';
+    table += line;
+  });
+  table += '<table>'
+  document.getElementById('result').innerHTML += table;
+}
+
+// res_dataに基づき解答状況を表形式で表示する
+const setupHist = () => {
+  hist = {};
+  if (!(res_data instanceof Array) || res_data.length == 0) return;
+  res_data.forEach((s) => {
+    hist[s.question_id] = s;
+  });
+}
+
+// student_idに基づき解答状況を表示する
+const showHistoryByStudent = async () => {
+  const sid = document.getElementById(sid_id).value;
+  if (sid == null || sid == '') return;
+  await query('/hist?sid=' + sid);
+  setupHist();
+  document.getElementById('result').innerHTML += '';
+  showHistoryTable();
+}
+
+// resultを消去する
+const clearResult = () => { document.getElementById('result').innerHTML = '' };
+
+// student_idに基づき設定する
+const setsid = () => {
+  let sid = document.getElementById(sid_id).value;
+  if (sid == null || sid == '') {
+    sid = 'sid=;max-age=0'
+  }
+  document.cookie = `sid=${sid}`;
+}
+
+// student_idをクッキーから読み出す
+const getsid = () => {
+  let sid = null;
+  document.cookie.split(/; */).forEach((s) => {
+    const v = s.split(/=/);
+    if (v[0] == 'sid') {
+      sid = v[1];
+    }
+  })
+  if (sid) document.getElementById(sid_id).value = sid;
+  return sid;
+}
+getsid();
+
+// question_idに基づき解答結果を取得し、Excel形式で出力する
+const exportInExcelFormat = async () => {
+  let qid = document.getElementById(qid_id).value
+  if (qid == null || qid == '') return
+
+  const origin = document.getElementById('origin').value.replace(/\/$/, '')
+  const path = '/respbyq?qid=' + qid
+  await axios({
+      url: origin + path,
+      method: 'GET',
+      responseType: 'blob',
+    })
+    .then(res => {
+      const url = URL.createObjectURL(new Blob([res.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'response.xlsx')
+      document.body.appendChild(link)
+      link.click()
+      URL.revokeObjectURL(url)
+
+      console.log(res)
+    })
+}
+
+</script>
+
+</body> </html>
