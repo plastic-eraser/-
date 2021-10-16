@@ -117,9 +117,8 @@ document.getElementById("ransuu").innerHTML = num; //乱数の出力
 
 <span>あなたの学生番号 </span><span id="si" name="sid"></span><span id="sid" name="sid"></span>
 <div id="today" name="today"></div>
-<form><input type="text" name="sd" id="sd"  size="10"><form><input type="button" value="日付検索" onClick="kensaku()"><input type="button" value="今日の解答を表示" onclick="showResponseByDay()"><input type="button" value="今までの解答を表示" onclick="showResponseByStudent()"><input type="button" value="最新の３件" onclick="kouzyun()"><br>
+<form><input type="text" name="sd" id="sd"  size="10"><form><input type="button" value="日付検索" onClick="kensaku()"><input type="button" value="本日の実績を表示" onclick="showResponseByDay()"><input type="button" value="今までの実績を表示" onclick="showResponseByStudent()"><input type="button" value="最新の３件" onclick="kouzyun()"><br>
 <form><input type="button" value="提出ID生成" onClick="random()"><span id="ransuu"></span></form>
-<input type="button" value="clear" onclick="clearResult()"><br>
 <hr>
 <div id="result"></div>
 <p>最後までタイプした課題のみを表示しています。</p>
@@ -166,7 +165,7 @@ var month = hiduke.getMonth()+1;
 var week = hiduke.getDay();
 var day = hiduke.getDate();
 var yobi= new Array("日","月","火","水","木","金","土");
-var to=year+'年'+month+'月'+day+'日';
+var to=year+'-'+('0'+month).slice(-2)+'-'+('0'+day).slice(-2);
 document.getElementById('today').innerHTML =to;
 }
 
