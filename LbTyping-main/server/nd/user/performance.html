@@ -117,7 +117,7 @@ document.getElementById("ransuu").innerHTML = num; //乱数の出力
 
 <span>あなたの学生番号 </span><span id="si" name="sid"></span><span id="sid" name="sid"></span>
 <div id="today" name="today"></div>
-<form><input type="text" name="sd" id="sd"  size="10"><form><input type="button" value="日付検索" onClick="kensaku()"><input type="button" value="本日の実績を表示" onclick="showResponseByDay()"><input type="button" value="今までの実績を表示" onclick="showResponseByStudent()"><input type="button" value="最新の３件" onclick="kouzyun()"><br>
+<form><input type="text" name="sd" id="sd"  size="10"><form><input type="button" value="日付検索" onClick="kensaku()"><input type="button" value="本日の実績を表示" onclick="showResponseByDay()"><input type="button" value="最新の３件" onclick="kouzyun()"><input type="button" value="今までの実績を表示" onclick="showResponseByStudent()"><br>
 <form><input type="button" value="提出ID生成" onClick="random()"><span id="ransuu"></span></form>
 <hr>
 <div id="result"></div>
@@ -140,8 +140,8 @@ const note_id = 'note';
 let null_string = '&nbsp;'
 const flag_show_result = true;
 // オリジンの変更
-
-
+ var mondai=[];
+var u=0;
 // pathに基づきサーバに問い合わせる
 const query = async (path) => {
   const origin = 'http://localhost:21337'
@@ -318,7 +318,7 @@ const tString = (d) => {
   if (d == null || d == '') return null_string;
   const daytable = "日月火水木金土".split('').map((c) => `(${c})`);
   const date = new Date(d);
-  return ` ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+  return ` ${('0'+date.getHours()).slice(-2)}:${('0'+date.getMinutes()).slice(-2)}:${('0'+date.getSeconds()).slice(-2)}`
 }
 // 開始時刻d1と終了時刻d2の経過時間を"4分0秒"のような文字列にする
 const worktimeString = (d1, d2) => {
@@ -387,6 +387,7 @@ const endR = async () => {
 }
 
 // res_dataに基づきすべての問題（の一部の属性）を表形式で表示する
+/**
 const showQuestionForChoice = () => {
   const a = (res_data instanceof Array) ? res_data : [res_data];
   if (a.forEach) {
@@ -429,16 +430,9 @@ const showQuestionForChoice = () => {
     table += '<table>'
     document.getElementById('result').innerHTML += table;
   }
-}
+}**/
 
-// すべての問題を表示する
-const showQuestion = async () => {
-  await query('/show?tab=question');
-  showQuestionForChoice();
-}
 
-// すべての解答を表示する
-const showResponse = () => query('/show?tab=response');
 
 // student_idに基づき解答を表示するResponsebyStudentが押されたら実行されるプログラム
 const showResponseByStudent = async () => {
@@ -538,55 +532,44 @@ const showResponseByDay = async () => {
 }
   const showResponsekyouTable = () => {
   clearResult()
-  var z=kyou();
-  var v;
+  var k=kyou();//今日の日付を格納
+  var i=0;
+  var narabi=[];
 const a = (res_data instanceof Array) ? res_data : [res_data];
   let table = '<div style="height:300px; width:2000px; overflow-y:scroll; overflow-:scroll;"><br><table border="1" ><tr><th scope="col"">日付<i class="fa fa-sort"></i></th><th scope="col">問題</th><th scope="col">誤タイプ数</th><th scope="col">解答時間</th></tr>';
   a.forEach((s) => 
   {
-  v=toshiString(s.finish_at);
-  if(v==z)
-  {
-    let line = '<tr class="item">';
-    line += '<td>' + toshiString(s.finish_at) +" "+ tString(s.start_at)+'</td>';
-	if(s.question_id==500)
-	{
-	line += '<td>No.1 Hello</td>';
-	}
-	if(s.question_id==501)
-	{
-	line += '<td>No.2 Pangram</td>';
-	}
-	if(s.question_id==502)
-	{
-	line += '<td>No.3 Even-Odd</td>';
-	}
-	if(s.question_id==503)
-	{
-	line += '<td>No.4 Ten Times</td>';
-	}
-	if(s.question_id==504)
-	{
-	line += '<td>No.5 Maximum</td>';
-	}
-	if(s.question_id==505)
-	{
-	line += '<td>No.6 Triangle Area</td>';
-	}
-	if(s.question_id==506)
-	{
-	line += '<td>No.7 Exponent</td>';
-	}
-    line += '<td align="right">' + s.miss_count + '</td>';
-    line += '<td>' + worktimeString(s.start_at, s.finish_at) + '</td>';
-    line += '</tr>';
-    table += line;
-	}
-  });//sqlの中。この中に処理を書く
-  table += '<table></div>'
-  document.getElementById('result').innerHTML +=table;
-  }
+ narabi[i]=[toshiString(s.finish_at),tString(s.start_at),s.question_id,s.miss_count,worktimeString(s.start_at, s.finish_at)];
+  i=i+1;
+  })
+  narabi.sort(function(a, b){
+	return (a[0] < b[0] ? 1 : -1);
+});  
   
+  for(var z=0;z<i;z++)
+	{
+	if(narabi[z][0]==k)
+	{
+			let line = '<tr class="item">';
+			line += '<td>' + narabi[z][0] +" "+ narabi[z][1]+'</td>';
+					for(var w=0;w<u;w++)
+					{
+						if(narabi[z][2]==mondai[w][0])
+								{
+								line += '<td>'+mondai[w][1]+'</td>';
+								}
+					}
+			line += '<td align="right">' + narabi[z][3] + '</td>';
+			line += '<td>' + narabi[z][4] + '</td>';
+			line += '</tr>';
+			table += line;
+		}	
+	}
+ //sqlの中。この中に処理を書く
+  table += '<table></div>'
+  document.getElementById('result').innerHTML += table;
+  }
+  //今日の結果表示テーブル終わり
   
   
   
@@ -602,56 +585,57 @@ const showResponseBykensaku = async () => {
   await query('/resp?sid=' + sid);
   showResponsekensakuTable();
 }
+
+
+//コメントフォームから検索した日付を表示
  const showResponsekensakuTable = () => {
   clearResult()
-  var u=document.getElementById('sd').value;
+  var v=document.getElementById('sd').value;//コメントフォームの値を格納
 const a = (res_data instanceof Array) ? res_data : [res_data];
   let table = '<div style="height:300px; width:2000px; overflow-y:scroll; overflow-:scroll;"><br><table border="1"><tr><th scope="col">日付</th><th scope="col">問題</th><th scope="col">誤タイプ数</th><th scope="col">解答時間</th></tr>';
-  a.forEach((s) => 
+  var i=0;
+  var narabi=[];
+//
+a.forEach((s) => 
   {
-  var v=toshiString(s.finish_at);
-  if(v==u)
-  {
-    let line = '<tr class="item">';
-    line += '<td>' + toshiString(s.finish_at) +" "+ tString(s.start_at)+'</td>';
-	if(s.question_id==500)
+ narabi[i]=[toshiString(s.finish_at),tString(s.start_at),s.question_id,s.miss_count,worktimeString(s.start_at, s.finish_at)];
+
+  i=i+1;
+  })
+ //
+narabi.sort(function(a, b){
+	return (a[0] < b[0] ? 1 : -1);
+});  
+  
+  for(var z=0;z<i;z++)
 	{
-	line += '<td>No.1 Hello</td>';
+  if(narabi[z][0]==v)
+		{
+			let line = '<tr class="item">';
+			line += '<td>' + narabi[z][0] +" "+ narabi[z][1]+'</td>';
+					for(var w=0;w<u;w++)
+					{
+						if(narabi[z][2]==mondai[w][0])
+								{
+								line += '<td>'+mondai[w][1]+'</td>';
+								}
+					}
+			line += '<td align="right">' + narabi[z][3] + '</td>';
+			line += '<td>' + narabi[z][4] + '</td>';
+			line += '</tr>';
+			table += line;
+		}
 	}
-	if(s.question_id==501)
-	{
-	line += '<td>No.2 Pangram</td>';
-	}
-	if(s.question_id==502)
-	{
-	line += '<td>No.3 Even-Odd</td>';
-	}
-	if(s.question_id==503)
-	{
-	line += '<td>No.4 Ten Times</td>';
-	}
-	if(s.question_id==504)
-	{
-	line += '<td>No.5 Maximum</td>';
-	}
-	if(s.question_id==505)
-	{
-	line += '<td>No.6 Triangle Area</td>';
-	}
-	if(s.question_id==506)
-	{
-	line += '<td>No.7 Exponent</td>';
-	}
-    line += '<td align="right">' + s.miss_count + '</td>';
-    line += '<td>' + worktimeString(s.start_at, s.finish_at) + '</td>';
-    line += '</tr>';
-    table += line;
-	}
-	
-  });//sqlの中。この中に処理を書く
+ ;//sqlの中。この中に処理を書く
   table += '<table></div>'
   document.getElementById('result').innerHTML += table;
   }
+    //日付の検索表示テーブルの終わり
+  
+  
+  
+  
+  
   //日付を降順に表示するテーブルを作成
    const kouzyun= () =>
 	{
@@ -665,14 +649,20 @@ const showResponseBykouzyun = async () =>
 	await query('/resp?sid=' + sid);
 	showResponsekouzyunTable();
 	}
+	
+	
 //降順のテーブルを表示
  const showResponsekouzyunTable = () => {
   clearResult()
-
 const a = (res_data instanceof Array) ? res_data : [res_data];
+	
   let table ='<div style="height:300px; width:2000px; overflow-y:scroll; overflow-:scroll;"><br><table border="1"><tr><th scope="col">日付</th><th scope="col">問題</th><th scope="col">誤タイプ数</th><th scope="col">解答時間</th></tr>';
   var i=0;
   var narabi=[];
+	if(res_data==null){
+		table += '<table></div>'
+		document.getElementById('result').innerHTML =table ;
+			return; }
   a.forEach((s) => 
   {
  narabi[i]=[toshiString(s.finish_at),tString(s.start_at),s.question_id,s.miss_count,worktimeString(s.start_at, s.finish_at)];
@@ -682,37 +672,116 @@ const a = (res_data instanceof Array) ? res_data : [res_data];
   narabi.sort(function(a, b){
 	return (a[0] < b[0] ? 1 : -1);
 });
-  for(var z=0;z<3;z++)
+
+  for(var z=0;z<i;z++)
+	{  let line = '<tr class="item">';
+		
+			line += '<td>' + narabi[z][0] +" "+narabi[z][1] +'</td>';
+			for(var w=0;w<u;w++)
+			{
+			if(narabi[z][2]==mondai[w][0])
+			{
+			line += '<td>'+mondai[w][1]+'</td>';
+			}
+			}
+			
+			line += '<td align="right">' + narabi[z][3]+ '</td>';
+			line += '<td>' + narabi[z][4]+ '</td>';
+			line += '</tr>';
+			table += line; 
+			if(z==2)
+			break;
+	} 
+  table += '<table></div>'
+  document.getElementById('result').innerHTML =table ;
+  }
+  //降順表示の終わり
+  
+  
+  
+  
+
+  
+ //問題IDと問題名の取得
+ 
+ const showQuestionForChoice = () => 
+ {  //clearResult()
+
+	
+  const a = (res_data instanceof Array) ? res_data : [res_data];
+  if (a.forEach) {
+  let table = '<br><table border="1"><tr><th>question_id</th><th>名前</th><th>difficulty</th></tr>';
+    res_data.forEach((s) => {
+							mondai[u]=[s.question_id,s.name,s.difficulty];
+							u=u+1;
+							}
+					);
+					
+ /** for(var g=0;g<u;g++)
+	{
+		let line = '<tr>';
+		line += '<td>'+mondai[g][0]+'</td>';
+		line += '<td>' + mondai[g][1] + '</td>';
+		line += '<td>' + mondai[g][2] + '</td>';
+		line += '</tr>';
+		table += line;
+	}
+    table += '<table>'**/
+    //document.getElementById('result').innerHTML += table;
+	return mondai;
+  }
+}
+// すべての問題を表示する
+const showQuestion = async () => {
+  await query('/show?tab=question');
+  showQuestionForChoice();
+} 
+//問題取得の終わり
+
+
+const showResponseBymon = async () => 
+	{
+	const sid = document.getElementById(sid_id).value;
+	if (sid == null || sid == '') return;
+	await query('/resp?sid=' + sid);
+	showResponsemon();
+	}
+
+
+
+
+ const showResponsemon = () => {
+  clearResult()
+
+const a = (res_data instanceof Array) ? res_data : [res_data];
+	
+  let table ='<div style="height:300px; width:2000px; overflow-y:scroll; overflow-:scroll;"><br><table border="1"><tr><th scope="col">日付</th><th scope="col">問題</th><th scope="col">誤タイプ数</th><th scope="col">解答時間</th></tr>';
+  var i=0;
+  var narabi=[];	
+  a.forEach((s) => 
+  {
+ narabi[i]=[toshiString(s.finish_at),tString(s.start_at),s.question_id,s.miss_count,worktimeString(s.start_at, s.finish_at)];
+//narabi[i] += { day:toshiString(s.finish_at), mondai:m, ayamari: s.miss_count,zikan:worktimeString(s.start_at, s.finish_at) };
+  i=i+1;
+  });//sqlの中。この中に処理を書く
+  narabi.sort(function(a, b){
+	return (a[0] < b[0] ? 1 : -1);
+});
+
+for(var l=0;l<1000;l++)
+{}
+  for(var z=0;z<5;z++)
 	{  let line = '<tr class="item">';
     line += '<td>' + narabi[z][0] +" "+narabi[z][1] +'</td>';
-	if(narabi[z][2]==500)
+	for(var w=0;w<u;w++){
+	if(narabi[z][2]==mondai[w][0])
 	{
-	line += '<td>No.1 Hello</td>';
+	line += '<td>'+mondai[w][1]+'</td>';
 	}
-	if(narabi[z][2]==501)
-	{
-	line += '<td>No.2 Pangram</td>';
 	}
-	if(narabi[z][2]==502)
-	{
-	line += '<td>No.3 Even-Odd</td>';
-	}
-	if(narabi[z][2]==503)
-	{
-	line += '<td>No.4 Ten Times</td>';
-	}
-	if(narabi[z][2]==504)
-	{
-	line += '<td>No.5 Maximum</td>';
-	}
-	if(narabi[z][2]==505)
-	{
-	line += '<td>No.6 Triangle Area</td>';
-	}
-	if(narabi[z][2]==506)
-	{
-	line += '<td>No.7 Exponent</td>';
-	}
+
+	
+	
     line += '<td align="right">' + narabi[z][3]+ '</td>';
     line += '<td>' + narabi[z][4]+ '</td>';
     line += '</tr>';
@@ -721,12 +790,18 @@ const a = (res_data instanceof Array) ? res_data : [res_data];
   table += '<table></div>'
   document.getElementById('result').innerHTML =table ;
   }
- 
- 
- //降順の終わり
+
+
+
+
+
+
+
+
+
 getsid();
 getsidAndshowQuestion();
-
+showQuestion();
 document.getElementById('sid').innerHTML = sid_id;
 document.getElementById('si').innerHTML = '<span>'+sid+'</span>';
 document.getElementById('sid').innerHTML ="";

@@ -41,35 +41,3 @@ INSERT INTO question(question_id,name,Type_content,count,basename,commentary,url
 (505,'No.6 Triangle Area','#include <stdio.h>\nint main(void) {\n    double bottom = 9.5;\n    double height = 5;\n    double area;\n\n    area = bottom * height / 2;\n    printf("area = %f\\n", area);\n    return 0;\n}',129,'trianglearea','このプログラムは底辺と高さの数値を用いて、三角形の面積を求めます。<br><br>3～5行目では、double型の変数bottom、height、areaを宣言します。<br>またbottomとheightには初期値を指定しており、それぞれ、三角形の<br>底辺と高さとなります。<br><br>7行目では面積の計算を行っています。<br>「底辺×高さ÷2」という、三角形の面積の公式に基づき、結果を<br>変数areaに代入します。<br><br>8行目にprintf関数を呼び出して、面積を出力します。<br>double型の値なので、%dではなく%fを指定します。<br>また%fの指定により、小数点以下はちょうど6桁分を出力します。<br>ですのでこのプログラムの出力は、「area = 23.750000」となります。','https://paiza.io/projects/e/zyZQMcxuB0h3EUFlV6Aveg');
 INSERT INTO question(question_id,name,Type_content,count,basename,commentary,url) VALUES
 (506,'No.7 Exponent','#include <stdio.h>\ndouble exponent(double x, int n){\n    int i;\n    double t = 1.0;\n    for(i = 1; i <= n; i++){\n        t = t * x;\n    }\n    printf("%.2f\\n", t);\n    return t;\n}\nint main(void){\n    double a = 3.5;\n    int b = 5;\n    printf("%.2f to the %dth power is ", a, b);\n    exponent(a, b);\n    return 0;\n}',207,'exponent','このプログラムは「3.5の5乗」を計算して出力します。<br>べき乗の計算には、自作関数を使用します。<br><br>2-10行目は自作関数のexponentの定義です。2行目を見ると、<br>double型のxとint型のnを引数にとり、double型の値を返すのが<br>わかります。<br>変数tを1.0に初期化してから、5-7行目で、for文を用いてn回、<br>xを掛けてtの値を更新します。<br>forループを終えたときのtの値が、xのn乗となります。8行目で<br>それを出力し、9行目のreturn文で値を返します。<br><br>11-17行目はmain関数です（これも自作関数です）。<br>double型の変数aは3.5、int型の変数bは5として、それぞれ初期化<br>します。<br>14行目のprintf関数では、「3.50 to the 5th power is 」の<br>ところを出力します。aの値の出力は、「%.2f」と指定することで、<br>小数第2位までにしています。<br>15行目でexponent関数の呼び出しを行い、この中で「525.22」を<br>出力します。8行目には「%.2f」とあり、ここでも小数第2位<br>までです（四捨五入せずに、3.5の5乗を計算すると525.21875に<br>なります）。<br><br>このプログラムの出力は、「3.50 to the 5th power is 525.22」<br>となります。','https://paiza.io/projects/e/jlDXtiJIwhJnKMYvsZPOdA');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(1,60231111,500,'2021-09-15T13:49:25.323Z','2021-09-15T13:50:04.792Z',1,'1','1431bc5f-353e-478b-b562-29c61e938920');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(2,60231111,501,'2021-09-15T13:57:29.584Z','2021-09-15T13:58:43.598Z',3,'1','1431bc5f-353e-478b-b562-29c61e938920');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(3,60232222,500,'2021-09-16T14:21:25.217Z','2021-09-16T14:21:58.754Z',0,'1','3c0fe046-cc7a-4243-95ce-16b941de64a4');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(4,60232222,501,'2021-09-16T14:22:11.877Z','2021-09-16T14:23:12.438Z',0,'3','3c0fe046-cc7a-4243-95ce-16b941de64a4');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(5,60232222,502,'2021-09-16T14:23:21.208Z','2021-09-16T14:24:40.476Z',0,'0','3c0fe046-cc7a-4243-95ce-16b941de64a4');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(6,60233333,500,'2021-09-16T14:32:55.053Z','2021-09-16T14:33:30.526Z',0,'0','ee318fd2-5c8f-4ba9-94bd-5683b079c206');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(7,60233333,501,'2021-09-16T14:41:03.226Z','2021-09-16T14:42:01.664Z',0,'1','ee318fd2-5c8f-4ba9-94bd-5683b079c206');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(8,60231111,500,'2021-09-20T13:49:25.323Z','2021-09-20T13:50:04.792Z',3,'2','1431bc5f-353e-478b-b562-29c61e938920');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(9,60231111,500,'2021-09-25T13:49:25.323Z','2021-09-25T13:50:04.792Z',1,'1','1431bc5f-353e-478b-b562-21c61e938920');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(10,60231111,501,'2021-09-25T13:57:29.584Z','2021-09-25T13:58:43.598Z',3,'1','1431bc5f-353e-478b-b562-21c61e938920');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(11,60231111,500,'2021-09-26T13:49:25.323Z','2021-09-26T13:50:04.792Z',1,'1','1431bc5f-353e-478b-b562-21c61e938920');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(12,60231111,503,'2021-09-26T13:57:29.584Z','2021-09-26T13:58:43.598Z',3,'1','1431bc5f-353e-478b-b562-21c61e938920');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(13,60231111,500,'2021-09-26T13:49:25.323Z','2021-09-26T13:50:04.792Z',1,'1','1431bc5f-353e-478b-b562-21c61e938920');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(14,60231111,503,'2021-10-03T13:57:29.584Z','2021-10-03T13:58:43.598Z',3,'1','2131vf1f-353e-478b-b562-21c61e938920');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(15,60231111,504,'2021-10-04T13:52:59.175Z','2021-10-04T13:55:39.128Z',3,'1','2121bc5f-353e-478b-b562-21c61e938920');
-INSERT INTO response(response_id,student_id,question_id,start_at,finish_at,miss_count,note,teisyutu_id)VALUES
-(16,60231111,502,'2021-10-05T13:52:59.175Z','2021-10-05T13:55:39.128Z',3,'1','2121bc5f-353e-478b-b562-21c61e938920');
