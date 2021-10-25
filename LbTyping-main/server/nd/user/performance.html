@@ -170,53 +170,7 @@ document.getElementById('today').innerHTML =to;
 }
 
 
-const showResponseDayTable = () => {
-clearResult();
-  const a = (res_data instanceof Array) ? res_data : [res_data];
-  let table = '<div style="height:300px; width:2000px; overflow-y:scroll; overflow-:scroll;"><br><table border="1""><tr><th scope="col">日付</th><th scope="col">問題</th><th scope="col" align="right">誤タイプ数</th><th scope="col">解答時間</th></tr>';
 
-  a.forEach((s) => {
-    let line = '<tr class="item">';
-  
-    line += '<td>' + toshiString(s.finish_at) +" "+ tString(s.start_at)+'</td>';
-	if(s.question_id==500)
-	{
-	line += '<td>No.1 Hello</td>';
-	}
-	if(s.question_id==501)
-	{
-	line += '<td>No.2 Pangram</td>';
-	}
-	if(s.question_id==502)
-	{
-	line += '<td>No.3 Even-Odd</td>';
-	}
-	if(s.question_id==503)
-	{
-	line += '<td>No.4 Ten Times</td>';
-	}
-	if(s.question_id==504)
-	{
-	line += '<td>No.5 Maximum</td>';
-	}
-	if(s.question_id==505)
-	{
-	line += '<td>No.6 Triangle Area</td>';
-	}
-	if(s.question_id==506)
-	{
-	line += '<td>No.7 Exponent</td>';
-	}
-
-
-    line += '<td align="right">' + s.miss_count + '</td>';
-    line += '<td>' + worktimeString(s.start_at, s.finish_at) + '</td>';
-
-    line += '</tr>';
-    table += line;
-  });
-  table += '<table></div>'
-  document.getElementById('result').innerHTML += table;}
 
 // res_dataの値に基づき表を作成するdocument.getElementById('sid').innerHTML='sid';
 // red_dataは，responseテーブルまたはその配列のJavaScriptオブジェクト
@@ -235,43 +189,25 @@ clearResult();
 	return (a[0] < b[0] ? 1 : -1);
 });
   for(var z=0;z<i;z++)
-	{  let line = '<tr class="item">';
-    line += '<td>' + narabi[z][0] +" "+narabi[z][1] +'</td>';
-	if(narabi[z][2]==500)
 	{
-	line += '<td>No.1 Hello</td>';
+			let line = '<tr class="item">';
+			line += '<td>' + narabi[z][0] +" "+ narabi[z][1]+'</td>';
+					for(var w=0;w<u;w++)
+					{
+						if(narabi[z][2]==mondai[w][0])
+								{
+								line += '<td>'+mondai[w][1]+'</td>';
+								}
+					}
+			line += '<td align="right">' + narabi[z][3] + '</td>';
+			line += '<td>' + narabi[z][4] + '</td>';
+			line += '</tr>';
+			table += line;
+			
 	}
-	if(narabi[z][2]==501)
-	{
-	line += '<td>No.2 Pangram</td>';
-	}
-	if(narabi[z][2]==502)
-	{
-	line += '<td>No.3 Even-Odd</td>';
-	}
-	if(narabi[z][2]==503)
-	{
-	line += '<td>No.4 Ten Times</td>';
-	}
-	if(narabi[z][2]==504)
-	{
-	line += '<td>No.5 Maximum</td>';
-	}
-	if(narabi[z][2]==505)
-	{
-	line += '<td>No.6 Triangle Area</td>';
-	}
-	if(narabi[z][2]==506)
-	{
-	line += '<td>No.7 Exponent</td>';
-	}
-    line += '<td align="right">' + narabi[z][3]+ '</td>';
-    line += '<td>' + narabi[z][4]+ '</td>';
-    line += '</tr>';
-    table += line; 
-	} 
   table += '<table></div>'
   document.getElementById('result').innerHTML =table ;
+   if(!narabi[0][2]){document.getElementById('result').innerHTML ="実績がありませんでした" ;}else{document.getElementById('result').innerHTML =table;}
 }
 
 // "2019-09-03T13:10:00.000Z"のような文字列(UTC)を
@@ -386,52 +322,6 @@ const endR = async () => {
   showResponseTable();
 }
 
-// res_dataに基づきすべての問題（の一部の属性）を表形式で表示する
-/**
-const showQuestionForChoice = () => {
-  const a = (res_data instanceof Array) ? res_data : [res_data];
-  if (a.forEach) {
-    let table = '<br><table border="1"><tr><th>問題</th><th>名前</th><th>difficulty</th></tr>';
-    res_data.forEach((s) => {
-      let line = '<tr>';
-    if(s.question_id==500)
-	{
-	line += '<td>No.1 Hello</td>';
-	}
-	if(s.question_id==501)
-	{
-	line += '<td>No.2 Pangram</td>';
-	}
-	if(s.question_id==502)
-	{
-	line += '<td>No.3 Even-Odd</td>';
-	}
-	if(s.question_id==503)
-	{
-	line += '<td>No.4 Ten Times</td>';
-	}
-	if(s.question_id==504)
-	{
-	line += '<td>No.5 Maximum</td>';
-	}
-	if(s.question_id==505)
-	{
-	line += '<td>No.6 Triangle Area</td>';
-	}
-	if(s.question_id==506)
-	{
-	line += '<td>No.7 Exponent</td>';
-	}
-      line += '<td>' + s.name + '</td>';
-      line += '<td>' + s.difficulty + '</td>';
-      line += '</tr>';
-      table += line;
-    });
-    table += '<table>'
-    document.getElementById('result').innerHTML += table;
-  }
-}**/
-
 
 
 // student_idに基づき解答を表示するResponsebyStudentが押されたら実行されるプログラム
@@ -441,12 +331,6 @@ const showResponseByStudent = async () => {
   await query('/resp?sid=' + sid);
   showResponseTable();
 }
-
-// res_dataに基づき解答状況を表形式で表示する
-
-
-
-
 // resultを消去する
 const clearResult = () => { document.getElementById('result').innerHTML = '' };
 
@@ -534,8 +418,10 @@ const showResponseByDay = async () => {
   clearResult()
   var k=kyou();//今日の日付を格納
   var i=0;
+  var h=0;
   var narabi=[];
 const a = (res_data instanceof Array) ? res_data : [res_data];
+
   let table = '<div style="height:300px; width:2000px; overflow-y:scroll; overflow-:scroll;"><br><table border="1" ><tr><th scope="col"">日付<i class="fa fa-sort"></i></th><th scope="col">問題</th><th scope="col">誤タイプ数</th><th scope="col">解答時間</th></tr>';
   a.forEach((s) => 
   {
@@ -549,7 +435,7 @@ const a = (res_data instanceof Array) ? res_data : [res_data];
   for(var z=0;z<i;z++)
 	{
 	if(narabi[z][0]==k)
-	{
+	{h=h+1;
 			let line = '<tr class="item">';
 			line += '<td>' + narabi[z][0] +" "+ narabi[z][1]+'</td>';
 					for(var w=0;w<u;w++)
@@ -568,6 +454,7 @@ const a = (res_data instanceof Array) ? res_data : [res_data];
  //sqlの中。この中に処理を書く
   table += '<table></div>'
   document.getElementById('result').innerHTML += table;
+    if(!narabi[0][2]){document.getElementById('result').innerHTML ="実績がありませんでした" ;}else if(h<1){document.getElementById('result').innerHTML ="条件に一致する実績がありませんでした" ;}else{document.getElementById('result').innerHTML =table;}
   }
   //今日の結果表示テーブル終わり
   
@@ -592,9 +479,11 @@ const showResponseBykensaku = async () => {
   clearResult()
   var v=document.getElementById('sd').value;//コメントフォームの値を格納
 const a = (res_data instanceof Array) ? res_data : [res_data];
+
   let table = '<div style="height:300px; width:2000px; overflow-y:scroll; overflow-:scroll;"><br><table border="1"><tr><th scope="col">日付</th><th scope="col">問題</th><th scope="col">誤タイプ数</th><th scope="col">解答時間</th></tr>';
   var i=0;
   var narabi=[];
+  var h=0;
 //
 a.forEach((s) => 
   {
@@ -610,7 +499,7 @@ narabi.sort(function(a, b){
   for(var z=0;z<i;z++)
 	{
   if(narabi[z][0]==v)
-		{
+		{h=h+1;
 			let line = '<tr class="item">';
 			line += '<td>' + narabi[z][0] +" "+ narabi[z][1]+'</td>';
 					for(var w=0;w<u;w++)
@@ -628,7 +517,10 @@ narabi.sort(function(a, b){
 	}
  ;//sqlの中。この中に処理を書く
   table += '<table></div>'
+  
   document.getElementById('result').innerHTML += table;
+    if(!narabi[0][2]){document.getElementById('result').innerHTML ="実績がありませんでした" ;}else if(h<1){document.getElementById('result').innerHTML ="条件に一致する実績がありませんでした" ;}else{document.getElementById('result').innerHTML =table;}
+  
   }
     //日付の検索表示テーブルの終わり
   
@@ -655,18 +547,15 @@ const showResponseBykouzyun = async () =>
  const showResponsekouzyunTable = () => {
   clearResult()
 const a = (res_data instanceof Array) ? res_data : [res_data];
-	
+	if(res_data==null){document.getElementById('result').innerHTML ="実績がありませんでした" ;}else{
   let table ='<div style="height:300px; width:2000px; overflow-y:scroll; overflow-:scroll;"><br><table border="1"><tr><th scope="col">日付</th><th scope="col">問題</th><th scope="col">誤タイプ数</th><th scope="col">解答時間</th></tr>';
   var i=0;
+  var h=0;
   var narabi=[];
-	if(res_data==null){
-		table += '<table></div>'
-		document.getElementById('result').innerHTML =table ;
-			return; }
+	
   a.forEach((s) => 
   {
  narabi[i]=[toshiString(s.finish_at),tString(s.start_at),s.question_id,s.miss_count,worktimeString(s.start_at, s.finish_at)];
-//narabi[i] += { day:toshiString(s.finish_at), mondai:m, ayamari: s.miss_count,zikan:worktimeString(s.start_at, s.finish_at) };
   i=i+1;
   });//sqlの中。この中に処理を書く
   narabi.sort(function(a, b){
@@ -679,10 +568,10 @@ const a = (res_data instanceof Array) ? res_data : [res_data];
 			line += '<td>' + narabi[z][0] +" "+narabi[z][1] +'</td>';
 			for(var w=0;w<u;w++)
 			{
-			if(narabi[z][2]==mondai[w][0])
-			{
-			line += '<td>'+mondai[w][1]+'</td>';
-			}
+				if(narabi[z][2]==mondai[w][0])
+				{
+				line += '<td>'+mondai[w][1]+'</td>';
+				}
 			}
 			
 			line += '<td align="right">' + narabi[z][3]+ '</td>';
@@ -693,7 +582,9 @@ const a = (res_data instanceof Array) ? res_data : [res_data];
 			break;
 	} 
   table += '<table></div>'
-  document.getElementById('result').innerHTML =table ;
+  
+  if(!narabi[0][2]){document.getElementById('result').innerHTML ="実績がありませんでした" ;}else{document.getElementById('result').innerHTML =table;}
+  }
   }
   //降順表示の終わり
   
